@@ -22,7 +22,8 @@ router.post('/', async (req, res) => {
   if (error) return res.status(404).json({ error: 'Property not found' });
 
   // Fetch current weather for the property city
-  const city = property.address ? property.address.split(',').pop().trim() : null;
+  const rawCity = property.address ? property.address.split(',').pop().trim() : null;
+  const city = rawCity ? rawCity.replace(/^\d+\s*/, '').trim() : null;
   const weatherInfo = city ? await getWeather(city) : null;
 
   // Get response from Claude
