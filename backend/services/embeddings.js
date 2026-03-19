@@ -1,10 +1,20 @@
 const OpenAI = require('openai');
 const supabase = require('./supabase');
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let openai = null;
+
+function getClient() {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) return null;
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 async function createEmbedding(text) {
-  const response = await openai.embeddings.create({
+  const client = getClient();
+  if (!client) throw new Error('OPENAI_API_KEY not configured');
+  const response = await client.embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });
@@ -22,22 +32,30 @@ function splitIntoChunks(text, chunkSize = 500) {
 }
 
 async function searchSimilarChunks(propertyId, query, limit = 5) {
-  const queryEmbedding = await createEmbedding(query);
+  // Skip RAG if OpenAI is not configured
+  if (!process.env.OPENAI_API_KEY) return null;
 
-  const { data, error } = await supabase.rpc('match_documents', {
-    query_embedding: queryEmbedding,
-    match_count: limit,
-    p_property_id: propertyId,
-  });
+  try {
+    const queryEmbedding = await createEmbedding(query);
 
-  if (error) {
-    console.error('RAG search error:', error.message);
+    const { data, error } = await supabase.rpc('match_documents', {
+      query_embedding: queryEmbedding,
+      match_count: limit,
+      p_property_id: propertyId,
+    });
+
+    if (error) {
+      console.error('RAG search error:', error.message);
+      return null;
+    }
+
+    if (!data || data.length === 0) return null;
+
+    return data.map(d => d.chunk_text).join('\n\n');
+  } catch (err) {
+    console.error('RAG search failed:', err.message);
     return null;
   }
-
-  if (!data || data.length === 0) return null;
-
-  return data.map(d => d.chunk_text).join('\n\n');
 }
 
 module.exports = { createEmbedding, splitIntoChunks, searchSimilarChunks };
