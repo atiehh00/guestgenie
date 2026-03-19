@@ -60,11 +60,38 @@ guestgenie/
 
 ### 1. Host Onboarding
 Host füllt Formular aus:
+
+🏠 Ankunft & Zugang:
+- Check-in Zeit / Check-out Zeit
+- Stockwerk & Wohnungsnummer
+- Check-in Anleitung (Self Check-in Ablauf)
+- Key-Box Code + Standort
+- WiFi Name + Passwort
+
+🛏️ Ausstattung:
+- Handtücher & Bettwäsche Info
+- Waschmaschine (wo, wie bedienen)
+- Heizung / Klimaanlage Bedienung
+
+🗑️ Alltag:
+- Mülltrennung & Entsorgung
+- Haushaltsgeräte (Herd, Geschirrspüler)
+
+📍 Umgebung:
+- Nächste U-Bahn / Öffis
+- Supermarkt in der Nähe
+- Restaurant-Empfehlungen
+
+ℹ️ Sonstiges:
+- Max. Gästeanzahl
+- Haustiere erlaubt
+- Rauchen erlaubt
+- Besondere Hinweise
+
+Basis-Felder (immer):
+- Host Name
 - Name der Wohnung
 - Adresse
-- Check-in Zeit / Check-out Zeit
-- WiFi Name + Passwort
-- Key-Box Code + Standort
 - Hausregeln
 - Parkplatz Info
 - Notfall-Kontakt
@@ -111,10 +138,24 @@ Der System-Prompt für Claude muss folgendes enthalten:
 - address (text)
 - checkin_time (text)
 - checkout_time (text)
+- floor_and_unit (text)
+- checkin_instructions (text)
 - wifi_name (text)
 - wifi_password (text)
 - keybox_code (text)
 - keybox_location (text)
+- towels_bedding_info (text)
+- washing_machine_info (text)
+- heating_ac_info (text)
+- trash_disposal_info (text)
+- household_appliances_info (text)
+- nearest_public_transport (text)
+- nearest_supermarket (text)
+- restaurant_recommendations (text)
+- max_guests (text)
+- pets_allowed (text)
+- smoking_allowed (text)
+- special_notes (text)
 - house_rules (text)
 - parking_info (text)
 - emergency_contact (text)
