@@ -2,7 +2,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function askClaude(property, guestMessage, history = []) {
+async function askClaude(property, guestMessage, history = [], weatherInfo = null) {
   const systemPrompt = `You are a helpful assistant for guests staying at the following property.
 
 Property Information:
@@ -33,7 +33,7 @@ Property Information:
 - Parkplatz: ${property.parking_info}
 - Notfallkontakt: ${property.emergency_contact}
 
-Rules you MUST follow:
+${weatherInfo ? `Current weather: ${weatherInfo}\n\n` : ''}Rules you MUST follow:
 1. Only answer using the information provided above. Do NOT invent or assume any details.
 2. If you don't know the answer, tell the guest to contact the host directly.
 3. Detect the language the guest is writing in and reply in that same language.

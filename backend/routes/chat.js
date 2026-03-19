@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../services/supabase');
 const { askClaude } = require('../services/claude');
+const { getWeather } = require('../services/weather');
 
 // POST /api/chat
 router.post('/', async (req, res) => {
@@ -20,8 +21,12 @@ router.post('/', async (req, res) => {
 
   if (error) return res.status(404).json({ error: 'Property not found' });
 
+  // Fetch current weather for the property city
+  const city = property.address ? property.address.split(',').pop().trim() : null;
+  const weatherInfo = city ? await getWeather(city) : null;
+
   // Get response from Claude
-  const response = await askClaude(property, message, history);
+  const response = await askClaude(property, message, history, weatherInfo);
 
   // Save conversation to Supabase
   await supabase.from('conversations').insert([{
