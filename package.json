@@ -1,0 +1,10 @@
+{
+  "name": "guestgenie",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev:backend": "cd backend && npm start",
+    "dev:frontend": "cd frontend && npm run dev"
+  }
+}

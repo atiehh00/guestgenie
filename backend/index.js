@@ -18,6 +18,11 @@ app.get('/', (req, res) => {
   res.json({ status: 'GuestGenie backend running' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Local development only — Vercel runs the exported app as a serverless function
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
