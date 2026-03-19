@@ -1,21 +1,51 @@
 import { useState } from 'react'
 
 const FIELDS = [
+  // Basis
   { name: 'host_name',          label: 'Dein Name',             placeholder: 'Max Mustermann' },
   { name: 'property_name',      label: 'Name der Unterkunft',   placeholder: 'Wiener Altbauwohnung' },
   { name: 'address',            label: 'Adresse',               placeholder: 'Mariahilfer Straße 45, 1060 Wien' },
-  { name: 'checkin_time',       label: 'Check-in Zeit',         placeholder: '15:00' },
-  { name: 'checkout_time',      label: 'Check-out Zeit',        placeholder: '11:00' },
-  { name: 'wifi_name',          label: 'WLAN-Name',             placeholder: 'HomeNet_Wien' },
-  { name: 'wifi_password',      label: 'WLAN-Passwort',         placeholder: 'meinpasswort123' },
-  { name: 'keybox_code',        label: 'Schlüsselbox-Code',     placeholder: '4821' },
-  { name: 'keybox_location',    label: 'Standort Schlüsselbox', placeholder: 'Links neben der Eingangstür' },
-  { name: 'house_rules',        label: 'Hausregeln',            placeholder: 'Kein Rauchen, keine Haustiere, Ruhezeit ab 22 Uhr', textarea: true },
-  { name: 'parking_info',       label: 'Parkplatz-Info',        placeholder: 'Straßenparken, Zone 6, Parkschein erforderlich', textarea: true },
-  { name: 'emergency_contact',  label: 'Notfallkontakt',        placeholder: '+43 699 123 456 78' },
+
+  // 🏠 Ankunft & Zugang
+  { section: '🏠 Ankunft & Zugang' },
+  { name: 'checkin_time',          label: 'Check-in Zeit',                placeholder: '15:00' },
+  { name: 'checkout_time',         label: 'Check-out Zeit',               placeholder: '11:00' },
+  { name: 'floor_and_unit',        label: 'Stockwerk & Wohnungsnummer',   placeholder: '3. OG, Tür 12' },
+  { name: 'checkin_instructions',  label: 'Check-in Anleitung',           placeholder: 'Schlüsselbox öffnen, Tür im Erdgeschoss ist offen, Lift zum 3. OG', textarea: true },
+  { name: 'keybox_code',           label: 'Schlüsselbox-Code',            placeholder: '4821' },
+  { name: 'keybox_location',       label: 'Standort Schlüsselbox',        placeholder: 'Links neben der Eingangstür' },
+  { name: 'wifi_name',             label: 'WLAN-Name',                    placeholder: 'HomeNet_Wien' },
+  { name: 'wifi_password',         label: 'WLAN-Passwort',                placeholder: 'meinpasswort123' },
+
+  // 🛏️ Ausstattung
+  { section: '🛏️ Ausstattung' },
+  { name: 'towels_bedding_info',   label: 'Handtücher & Bettwäsche',     placeholder: 'Frische Handtücher im Badezimmerschrank, extra Decken im Schlafzimmer', textarea: true },
+  { name: 'washing_machine_info',  label: 'Waschmaschine',               placeholder: 'Im Badezimmer, Waschpulver unter der Spüle, Kurzprogramm 30°C empfohlen', textarea: true },
+  { name: 'heating_ac_info',       label: 'Heizung / Klimaanlage',        placeholder: 'Thermostat im Flur, Heizung auf 3 = ca. 21°C', textarea: true },
+
+  // 🗑️ Alltag
+  { section: '🗑️ Alltag' },
+  { name: 'trash_disposal_info',       label: 'Mülltrennung & Entsorgung',  placeholder: 'Restmüll, Plastik, Papier — Tonnen im Innenhof links', textarea: true },
+  { name: 'household_appliances_info', label: 'Haushaltsgeräte',             placeholder: 'Herd: Ceranfeld, Geschirrspüler: Tabs unter der Spüle', textarea: true },
+
+  // 📍 Umgebung
+  { section: '📍 Umgebung' },
+  { name: 'nearest_public_transport',  label: 'Nächste U-Bahn / Öffis',       placeholder: 'U3 Zieglergasse, 2 Min. zu Fuß' },
+  { name: 'nearest_supermarket',       label: 'Supermarkt in der Nähe',        placeholder: 'Billa Plus, Mariahilfer Straße 52, Mo–Sa 7–20 Uhr' },
+  { name: 'restaurant_recommendations', label: 'Restaurant-Empfehlungen',      placeholder: 'Figlmüller (Schnitzel), Naschmarkt (5 Min.), Café Sperl', textarea: true },
+
+  // ℹ️ Sonstiges
+  { section: 'ℹ️ Sonstiges' },
+  { name: 'max_guests',        label: 'Max. Gästeanzahl',     placeholder: '4' },
+  { name: 'pets_allowed',      label: 'Haustiere erlaubt',    placeholder: 'Nein' },
+  { name: 'smoking_allowed',   label: 'Rauchen erlaubt',      placeholder: 'Nur am Balkon' },
+  { name: 'special_notes',     label: 'Besondere Hinweise',   placeholder: 'Bitte Schuhe im Eingangsbereich ausziehen', textarea: true },
+  { name: 'house_rules',       label: 'Hausregeln',           placeholder: 'Kein Rauchen, keine Haustiere, Ruhezeit ab 22 Uhr', textarea: true },
+  { name: 'parking_info',      label: 'Parkplatz-Info',       placeholder: 'Straßenparken, Zone 6, Parkschein erforderlich', textarea: true },
+  { name: 'emergency_contact', label: 'Notfallkontakt',       placeholder: '+43 699 123 456 78' },
 ]
 
-const EMPTY = Object.fromEntries(FIELDS.map(f => [f.name, '']))
+const EMPTY = Object.fromEntries(FIELDS.filter(f => f.name).map(f => [f.name, '']))
 
 export default function Dashboard() {
   const [form, setForm] = useState(EMPTY)
@@ -62,30 +92,36 @@ export default function Dashboard() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
-          {FIELDS.map(({ name, label, placeholder, textarea }) => (
-            <div key={name}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-              {textarea ? (
-                <textarea
-                  name={name}
-                  value={form[name]}
-                  onChange={handleChange}
-                  placeholder={placeholder}
-                  rows={3}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
-                />
-              ) : (
-                <input
-                  type="text"
-                  name={name}
-                  value={form[name]}
-                  onChange={handleChange}
-                  placeholder={placeholder}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                />
-              )}
-            </div>
-          ))}
+          {FIELDS.map((field, i) =>
+            field.section ? (
+              <h2 key={field.section} className="text-lg font-semibold text-gray-800 pt-4 pb-1 border-b border-gray-200">
+                {field.section}
+              </h2>
+            ) : (
+              <div key={field.name}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                {field.textarea ? (
+                  <textarea
+                    name={field.name}
+                    value={form[field.name]}
+                    onChange={handleChange}
+                    placeholder={field.placeholder}
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    name={field.name}
+                    value={form[field.name]}
+                    onChange={handleChange}
+                    placeholder={field.placeholder}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  />
+                )}
+              </div>
+            )
+          )}
 
           {error && (
             <p className="text-red-500 text-sm">{error}</p>

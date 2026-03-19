@@ -7,17 +7,31 @@ async function askClaude(property, guestMessage) {
 
 Property Information:
 - Name: ${property.property_name}
-- Address: ${property.address}
+- Adresse: ${property.address}
 - Host: ${property.host_name}
-- Check-in: ${property.checkin_time}
-- Check-out: ${property.checkout_time}
-- WiFi Name: ${property.wifi_name}
-- WiFi Password: ${property.wifi_password}
-- Key Box Code: ${property.keybox_code}
-- Key Box Location: ${property.keybox_location}
-- House Rules: ${property.house_rules}
-- Parking: ${property.parking_info}
-- Emergency Contact: ${property.emergency_contact}
+- Check-in Zeit: ${property.checkin_time}
+- Check-out Zeit: ${property.checkout_time}
+- Stockwerk & Wohnungsnummer: ${property.floor_and_unit}
+- Check-in Anleitung: ${property.checkin_instructions}
+- WLAN-Name: ${property.wifi_name}
+- WLAN-Passwort: ${property.wifi_password}
+- Schlüsselbox-Code: ${property.keybox_code}
+- Schlüsselbox-Standort: ${property.keybox_location}
+- Handtücher & Bettwäsche: ${property.towels_bedding_info}
+- Waschmaschine: ${property.washing_machine_info}
+- Heizung / Klimaanlage: ${property.heating_ac_info}
+- Mülltrennung & Entsorgung: ${property.trash_disposal_info}
+- Haushaltsgeräte: ${property.household_appliances_info}
+- Nächste U-Bahn / Öffis: ${property.nearest_public_transport}
+- Nächster Supermarkt: ${property.nearest_supermarket}
+- Restaurant-Empfehlungen: ${property.restaurant_recommendations}
+- Max. Gästeanzahl: ${property.max_guests}
+- Haustiere erlaubt: ${property.pets_allowed}
+- Rauchen erlaubt: ${property.smoking_allowed}
+- Besondere Hinweise: ${property.special_notes}
+- Hausregeln: ${property.house_rules}
+- Parkplatz: ${property.parking_info}
+- Notfallkontakt: ${property.emergency_contact}
 
 Rules you MUST follow:
 1. Only answer using the information provided above. Do NOT invent or assume any details.
