@@ -31,6 +31,7 @@ const FIELDS = [
   // 📍 Umgebung
   { section: '📍 Umgebung' },
   { name: 'nearest_public_transport',  label: 'Nächste U-Bahn / Öffis',       placeholder: 'U3 Zieglergasse, 2 Min. zu Fuß' },
+  { name: 'wiener_linien_stop_id',    label: 'Wiener Linien Stop-ID (RBL Nummer)', placeholder: 'z.B. 4118 (= U3 Rochusgasse)', hint: 'RBL Nummer findest du auf wienerlinien.at' },
   { name: 'nearest_supermarket',       label: 'Supermarkt in der Nähe',        placeholder: 'Billa Plus, Mariahilfer Straße 52, Mo–Sa 7–20 Uhr' },
   { name: 'restaurant_recommendations', label: 'Restaurant-Empfehlungen',      placeholder: 'Figlmüller (Schnitzel), Naschmarkt (5 Min.), Café Sperl', textarea: true },
 
@@ -119,6 +120,7 @@ export default function Dashboard() {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   />
                 )}
+                {field.hint && <p className="text-xs text-gray-400 mt-1">{field.hint}</p>}
               </div>
             )
           )}

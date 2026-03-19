@@ -3,6 +3,7 @@ const router = express.Router();
 const supabase = require('../services/supabase');
 const { askClaude } = require('../services/claude');
 const { getWeather } = require('../services/weather');
+const { getDepartures } = require('../services/wienerlinien');
 
 // POST /api/chat
 router.post('/', async (req, res) => {
@@ -26,8 +27,13 @@ router.post('/', async (req, res) => {
   const city = rawCity ? rawCity.replace(/^\d+\s*/, '').trim() : null;
   const weatherInfo = city ? await getWeather(city) : null;
 
+  // Fetch real-time public transport departures
+  const wienerLinienInfo = property.wiener_linien_stop_id
+    ? await getDepartures(property.wiener_linien_stop_id)
+    : null;
+
   // Get response from Claude
-  const response = await askClaude(property, message, history, weatherInfo);
+  const response = await askClaude(property, message, history, weatherInfo, wienerLinienInfo);
 
   // Save conversation to Supabase
   await supabase.from('conversations').insert([{
