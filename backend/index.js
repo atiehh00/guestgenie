@@ -11,8 +11,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/property', propertyRoutes);
-app.use('/api/chat', chatRoutes);
+app.use('/property', propertyRoutes);
+app.use('/chat', chatRoutes);
 
 app.get('/', (req, res) => {
   res.json({ status: 'GuestGenie backend running' });
