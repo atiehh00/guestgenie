@@ -2,7 +2,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function askClaude(property, guestMessage) {
+async function askClaude(property, guestMessage, history = []) {
   const systemPrompt = `You are a helpful assistant for guests staying at the following property.
 
 Property Information:
@@ -40,11 +40,18 @@ Rules you MUST follow:
 4. Be friendly and professional in tone.
 5. In case of emergency (fire, accident, medical): immediately recommend calling emergency services (112 in Europe) and contacting the host.`;
 
+  const historyMessages = history
+    .slice(1) // skip the welcome message (first bot message)
+    .map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.text,
+    }));
+
   const message = await client.messages.create({
     model: 'claude-sonnet-4-5',
     max_tokens: 1024,
     system: systemPrompt,
-    messages: [{ role: 'user', content: guestMessage }],
+    messages: [...historyMessages, { role: 'user', content: guestMessage }],
   });
 
   return message.content[0].text;

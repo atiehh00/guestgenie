@@ -5,7 +5,7 @@ const { askClaude } = require('../services/claude');
 
 // POST /api/chat
 router.post('/', async (req, res) => {
-  const { property_id, message } = req.body;
+  const { property_id, message, history } = req.body;
 
   if (!property_id || !message) {
     return res.status(400).json({ error: 'property_id and message are required' });
@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
   if (error) return res.status(404).json({ error: 'Property not found' });
 
   // Get response from Claude
-  const response = await askClaude(property, message);
+  const response = await askClaude(property, message, history);
 
   // Save conversation to Supabase
   await supabase.from('conversations').insert([{
