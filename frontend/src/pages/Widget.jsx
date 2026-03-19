@@ -1,14 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
 
 export default function Widget() {
   const { propertyId } = useParams()
   const [messages, setMessages] = useState([
-    { role: 'bot', text: 'Hi! I\'m your GuestGenie assistant. How can I help you today?' }
+    { role: 'bot', text: 'Hallo! Ich bin dein GuestGenie-Assistent. Wie kann ich dir helfen?' }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [property, setProperty] = useState(null)
   const bottomRef = useRef(null)
+
+  useEffect(() => {
+    fetch(`/api/property/${propertyId}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data) setProperty(data) })
+      .catch(() => {})
+  }, [propertyId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -47,8 +56,8 @@ export default function Widget() {
         <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-bold">G</div>
           <div>
-            <p className="font-semibold text-gray-900 text-sm">GuestGenie</p>
-            <p className="text-xs text-green-500">Online</p>
+            <p className="font-semibold text-gray-900 text-sm">{property ? property.property_name : 'GuestGenie'}</p>
+            <p className="text-xs text-green-500">{property ? `Dein Host: ${property.host_name}` : 'Online'}</p>
           </div>
         </div>
 
@@ -57,20 +66,20 @@ export default function Widget() {
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-xs lg:max-w-sm px-4 py-2.5 rounded-2xl text-sm whitespace-pre-wrap ${
+                className={`max-w-xs lg:max-w-sm px-4 py-2.5 rounded-2xl text-sm ${
                   msg.role === 'user'
-                    ? 'bg-indigo-600 text-white rounded-br-sm'
-                    : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                    ? 'bg-indigo-600 text-white rounded-br-sm whitespace-pre-wrap'
+                    : 'bg-gray-100 text-gray-800 rounded-bl-sm prose prose-sm'
                 }`}
               >
-                {msg.text}
+                {msg.role === 'bot' ? <ReactMarkdown>{msg.text}</ReactMarkdown> : msg.text}
               </div>
             </div>
           ))}
           {loading && (
             <div className="flex justify-start">
               <div className="bg-gray-100 text-gray-400 px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm">
-                Typing...
+                Schreibt...
               </div>
             </div>
           )}
@@ -83,7 +92,7 @@ export default function Widget() {
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Ask a question..."
+            placeholder="Stell eine Frage..."
             disabled={loading}
             className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-gray-50"
           />
