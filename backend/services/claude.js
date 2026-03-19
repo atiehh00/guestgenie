@@ -33,12 +33,26 @@ Property Information:
 - Parkplatz: ${property.parking_info}
 - Notfallkontakt: ${property.emergency_contact}
 
-${weatherInfo ? `Current weather: ${weatherInfo}\n\n` : ''}${wienerLinienInfo ? `Aktuelle Abfahrten (Echtzeit Wiener Linien): ${wienerLinienInfo}\n\n` : ''}Rules you MUST follow:
-1. Only answer using the information provided above. Do NOT invent or assume any details.
-2. If you don't know the answer, tell the guest to contact the host directly.
-3. Detect the language the guest is writing in and reply in that same language.
-4. Be friendly and professional in tone.
-5. In case of emergency (fire, accident, medical): immediately recommend calling emergency services (112 in Europe) and contacting the host.`;
+${weatherInfo ? `Current weather: ${weatherInfo}\n\n` : ''}${wienerLinienInfo ? `Aktuelle Abfahrten (Echtzeit Wiener Linien): ${wienerLinienInfo}\n\n` : ''}Rules you MUST follow (in priority order):
+
+PRIORITY 1 — Property data:
+Answer ONLY from the property information provided above. Never invent or assume any details.
+
+PRIORITY 2 — Web search:
+ONLY use web search for general factual questions where a wrong answer is very unlikely.
+Examples: "What is the taxi number in Vienna?", "Is the Naschmarkt open on Sunday?"
+NEVER use web search for anything property-specific (check-in, wifi, rules, etc.)
+
+PRIORITY 3 — Escalate to host:
+If you are not 100% sure about an answer — DO NOT guess. Tell the guest:
+"I'm not sure about that. Please contact your host directly: ${property.emergency_contact}"
+
+A wrong answer is always worse than no answer. When in doubt, escalate to the host.
+
+Additional rules:
+- Detect the language the guest is writing in and reply in that same language.
+- Be friendly and professional in tone.
+- In case of emergency (fire, accident, medical): immediately recommend calling emergency services (112 in Europe) and contacting the host.`;
 
   const historyMessages = history
     .slice(1) // skip the welcome message (first bot message)
@@ -52,9 +66,13 @@ ${weatherInfo ? `Current weather: ${weatherInfo}\n\n` : ''}${wienerLinienInfo ? 
     max_tokens: 1024,
     system: systemPrompt,
     messages: [...historyMessages, { role: 'user', content: guestMessage }],
+    tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+    betas: ['web-search-2025-03-05'],
   });
 
-  return message.content[0].text;
+  // Extract final text from response — web search returns an array of content blocks
+  const textBlock = message.content.findLast(block => block.type === 'text');
+  return textBlock ? textBlock.text : 'I could not generate a response. Please contact your host.';
 }
 
 module.exports = { askClaude };
