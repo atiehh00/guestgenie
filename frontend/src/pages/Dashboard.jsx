@@ -53,6 +53,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadResult, setUploadResult] = useState(null)
+  const [documents, setDocuments] = useState([])
+  const [docError, setDocError] = useState(null)
 
   function handleChange(e) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -82,6 +86,49 @@ export default function Dashboard() {
   }
 
   const chatUrl = result ? `${window.location.origin}/chat/${result.id}` : null
+
+  async function fetchDocuments(propertyId) {
+    try {
+      const res = await fetch(`/api/documents/${propertyId}`)
+      const data = await res.json()
+      if (res.ok) setDocuments(data)
+    } catch {}
+  }
+
+  async function handleUpload(e) {
+    e.preventDefault()
+    if (!result) return
+    const fileInput = e.target.querySelector('input[type="file"]')
+    const file = fileInput?.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setDocError(null)
+    setUploadResult(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('property_id', result.id)
+      formData.append('file', file)
+      const res = await fetch('/api/documents/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Upload failed')
+      setUploadResult(data)
+      fileInput.value = ''
+      fetchDocuments(result.id)
+    } catch (err) {
+      setDocError(err.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function handleDeleteDoc(filename) {
+    try {
+      await fetch(`/api/documents/${result.id}/${encodeURIComponent(filename)}`, { method: 'DELETE' })
+      fetchDocuments(result.id)
+    } catch {}
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
@@ -150,6 +197,57 @@ export default function Dashboard() {
             >
               {chatUrl}
             </a>
+          </div>
+        )}
+
+        {result && (
+          <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">Dokumente hochladen (optional)</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Lade PDF, TXT oder DOCX Dateien hoch — der Chatbot nutzt diese Infos für Gästeantworten.
+            </p>
+
+            <form onSubmit={handleUpload} className="flex gap-2 items-center mb-4">
+              <input
+                type="file"
+                accept=".pdf,.txt,.docx"
+                className="flex-1 text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
+              />
+              <button
+                type="submit"
+                disabled={uploading}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors"
+              >
+                {uploading ? 'Lädt...' : 'Hochladen'}
+              </button>
+            </form>
+
+            {docError && <p className="text-red-500 text-sm mb-3">{docError}</p>}
+            {uploadResult && (
+              <p className="text-green-600 text-sm mb-3">
+                Dokument hochgeladen — {uploadResult.chunks} Textabschnitte erstellt.
+              </p>
+            )}
+
+            {documents.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">Hochgeladene Dokumente:</p>
+                {documents.map((doc, i) => (
+                  <div key={i} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                    <div>
+                      <p className="text-sm text-gray-800">{doc.filename}</p>
+                      <p className="text-xs text-gray-400">{doc.chunks} Abschnitte</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteDoc(doc.filename)}
+                      className="text-red-400 hover:text-red-600 text-sm"
+                    >
+                      Löschen
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

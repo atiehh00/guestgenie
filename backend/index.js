@@ -4,6 +4,7 @@ const cors = require('cors');
 
 const propertyRoutes = require('./routes/property');
 const chatRoutes = require('./routes/chat');
+const documentsRoutes = require('./routes/documents');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use('/api/property', propertyRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/documents', documentsRoutes);
 
 app.get('/', (req, res) => {
   res.json({ status: 'GuestGenie backend running' });

@@ -2,7 +2,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function askClaude(property, guestMessage, history = [], weatherInfo = null, wienerLinienInfo = null) {
+async function askClaude(property, guestMessage, history = [], weatherInfo = null, wienerLinienInfo = null, ragContext = null) {
   const systemPrompt = `You are a helpful assistant for guests staying at the following property.
 
 Property Information:
@@ -33,7 +33,7 @@ Property Information:
 - Parkplatz: ${property.parking_info}
 - Notfallkontakt: ${property.emergency_contact}
 
-${weatherInfo ? `Current weather: ${weatherInfo}\n\n` : ''}${wienerLinienInfo ? `Aktuelle Abfahrten (Echtzeit Wiener Linien): ${wienerLinienInfo}\n\n` : ''}Rules you MUST follow (in priority order):
+${weatherInfo ? `Current weather: ${weatherInfo}\n\n` : ''}${wienerLinienInfo ? `Aktuelle Abfahrten (Echtzeit Wiener Linien): ${wienerLinienInfo}\n\n` : ''}${ragContext ? `Additional knowledge from host documents:\n${ragContext}\nUse this information to answer guest questions when relevant.\n\n` : ''}Rules you MUST follow (in priority order):
 
 PRIORITY 1 — Property data:
 Answer ONLY from the property information provided above. Never invent or assume any details.

@@ -4,6 +4,7 @@ const supabase = require('../services/supabase');
 const { askClaude } = require('../services/claude');
 const { getWeather } = require('../services/weather');
 const { getDepartures } = require('../services/wienerlinien');
+const { searchSimilarChunks } = require('../services/embeddings');
 
 // POST /api/chat
 router.post('/', async (req, res) => {
@@ -32,8 +33,11 @@ router.post('/', async (req, res) => {
     ? await getDepartures(property.wiener_linien_stop_id)
     : null;
 
+  // Search RAG documents for relevant context
+  const ragContext = await searchSimilarChunks(property_id, message);
+
   // Get response from Claude
-  const response = await askClaude(property, message, history, weatherInfo, wienerLinienInfo);
+  const response = await askClaude(property, message, history, weatherInfo, wienerLinienInfo, ragContext);
 
   // Save conversation to Supabase
   await supabase.from('conversations').insert([{
