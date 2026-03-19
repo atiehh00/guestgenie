@@ -5,6 +5,7 @@
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
     "dev:backend": "cd backend && npm start",
-    "dev:frontend": "cd frontend && npm run dev"
+    "dev:frontend": "cd frontend && npm run dev",
+    "seed": "node backend/scripts/seedProperties.js"
   }
 }
