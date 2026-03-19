@@ -223,3 +223,31 @@ Property-Daten holen
 - Zweck dieses MVPs: Demo für echte Wiener 
   Hosts + Antler Bewerbung
 - Branding: GuestGenie
+
+---
+
+## Feature Roadmap
+
+### ✅ Phase 1 — MVP
+Demo-ready Chatbot für Wiener Airbnb Hosts.
+Claude beantwortet Gäste-Fragen basierend auf Property-Daten.
+
+### 🔜 Phase 2 — Wiener Linien API
+Echtzeit Öffi-Daten direkt im Chat.
+Gäste können nach U-Bahn, Bus, Tram fragen.
+API ist kostenlos und einfach einzubinden.
+
+### Phase 3 — RAG + Web-Suche
+RAG: Host lädt Dokumente hoch, Claude liest daraus.
+Web-Suche: Claude sucht selbst im Web wenn er keine Antwort hat (z.B. Taxipreise, Events).
+
+### Phase 4 — WhatsApp Integration
+Gäste chatten über WhatsApp statt Browser-Widget.
+Via Twilio oder Meta WhatsApp Business API.
+
+### Phase 5 — Google Maps API
+Entfernungen, Routen, Empfehlungen in der Nähe.
+
+### Phase 6 — Payment Links
+Hosts bieten Extra-Services an (früher Check-in etc.).
+Bezahlung via Stripe Payment Links.
