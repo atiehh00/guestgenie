@@ -1,0 +1,36 @@
+const express = require('express');
+const router = express.Router();
+const supabase = require('../services/supabase');
+const { askClaude } = require('../services/claude');
+
+// POST /api/chat
+router.post('/', async (req, res) => {
+  const { property_id, message } = req.body;
+
+  if (!property_id || !message) {
+    return res.status(400).json({ error: 'property_id and message are required' });
+  }
+
+  // Fetch property data from Supabase
+  const { data: property, error } = await supabase
+    .from('properties')
+    .select('*')
+    .eq('id', property_id)
+    .single();
+
+  if (error) return res.status(404).json({ error: 'Property not found' });
+
+  // Get response from Claude
+  const response = await askClaude(property, message);
+
+  // Save conversation to Supabase
+  await supabase.from('conversations').insert([{
+    property_id,
+    guest_message: message,
+    bot_response: response,
+  }]);
+
+  res.json({ response });
+});
+
+module.exports = router;
