@@ -68,7 +68,16 @@ router.post('/', async (req, res) => {
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    const msg = error.message || '';
+    let userMessage = 'Speichern fehlgeschlagen. Bitte erneut versuchen.';
+    if (msg.includes('pattern')) {
+      userMessage = 'Ungültiges Format. Bitte Telefonnummer prüfen: z.B. +43664123456';
+    } else if (msg.includes('null value') || msg.includes('not-null')) {
+      userMessage = 'Bitte alle Pflichtfelder ausfüllen.';
+    }
+    return res.status(400).json({ error: userMessage });
+  }
   res.status(201).json(data);
 });
 
