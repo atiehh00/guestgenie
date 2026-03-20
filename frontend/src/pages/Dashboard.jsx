@@ -1,15 +1,17 @@
 import { useState } from 'react'
 
+const PHONE_REGEX = /^\+4[139]\d{7,15}$/
+
 const FIELDS = [
   // Basis
-  { name: 'host_name',          label: 'Dein Name',             placeholder: 'Max Mustermann' },
-  { name: 'property_name',      label: 'Name der Unterkunft',   placeholder: 'Wiener Altbauwohnung' },
-  { name: 'address',            label: 'Adresse',               placeholder: 'Mariahilfer Straße 45, 1060 Wien' },
+  { name: 'host_name',          label: 'Dein Name',             placeholder: 'Max Mustermann', required: true },
+  { name: 'property_name',      label: 'Name der Unterkunft',   placeholder: 'Wiener Altbauwohnung', required: true },
+  { name: 'address',            label: 'Adresse',               placeholder: 'Mariahilfer Straße 45, 1060 Wien', required: true },
 
   // 🏠 Ankunft & Zugang
   { section: '🏠 Ankunft & Zugang' },
-  { name: 'checkin_time',          label: 'Check-in Zeit',                placeholder: '15:00' },
-  { name: 'checkout_time',         label: 'Check-out Zeit',               placeholder: '11:00' },
+  { name: 'checkin_time',          label: 'Check-in Zeit',                placeholder: '15:00', required: true },
+  { name: 'checkout_time',         label: 'Check-out Zeit',               placeholder: '11:00', required: true },
   { name: 'floor_and_unit',        label: 'Stockwerk & Wohnungsnummer',   placeholder: '3. OG, Tür 12' },
   { name: 'checkin_instructions',  label: 'Check-in Anleitung',           placeholder: 'Schlüsselbox öffnen, Tür im Erdgeschoss ist offen, Lift zum 3. OG', textarea: true },
   { name: 'keybox_code',           label: 'Schlüsselbox-Code',            placeholder: '4821' },
@@ -43,8 +45,14 @@ const FIELDS = [
   { name: 'special_notes',     label: 'Besondere Hinweise',   placeholder: 'Bitte Schuhe im Eingangsbereich ausziehen', textarea: true },
   { name: 'house_rules',       label: 'Hausregeln',           placeholder: 'Kein Rauchen, keine Haustiere, Ruhezeit ab 22 Uhr', textarea: true },
   { name: 'parking_info',      label: 'Parkplatz-Info',       placeholder: 'Straßenparken, Zone 6, Parkschein erforderlich', textarea: true },
-  { name: 'emergency_contact', label: 'Notfallkontakt',       placeholder: '+43 699 123 456 78' },
+  { name: 'emergency_contact', label: 'Notfallkontakt',       placeholder: '+43 699 123 456 78', required: true, validate: v => PHONE_REGEX.test(v.replace(/\s/g, '')) ? null : 'Ungültiges Format. Beispiel: +43664123456' },
 ]
+
+function validateField(field, value) {
+  if (field.required && !value.trim()) return `${field.label} ist ein Pflichtfeld`
+  if (value.trim() && field.validate) return field.validate(value)
+  return null
+}
 
 const EMPTY = Object.fromEntries(FIELDS.filter(f => f.name).map(f => [f.name, '']))
 
@@ -57,13 +65,42 @@ export default function Dashboard() {
   const [uploadResult, setUploadResult] = useState(null)
   const [documents, setDocuments] = useState([])
   const [docError, setDocError] = useState(null)
+  const [touched, setTouched] = useState({})
+  const [fieldErrors, setFieldErrors] = useState({})
 
   function handleChange(e) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    setForm(prev => ({ ...prev, [name]: value }))
+    if (touched[name]) {
+      const field = FIELDS.find(f => f.name === name)
+      if (field) setFieldErrors(prev => ({ ...prev, [name]: validateField(field, value) }))
+    }
+  }
+
+  function handleBlur(e) {
+    const { name, value } = e.target
+    setTouched(prev => ({ ...prev, [name]: true }))
+    const field = FIELDS.find(f => f.name === name)
+    if (field) setFieldErrors(prev => ({ ...prev, [name]: validateField(field, value) }))
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
+
+    // Validate all fields
+    const allTouched = {}
+    const errors = {}
+    let hasError = false
+    for (const field of FIELDS) {
+      if (!field.name) continue
+      allTouched[field.name] = true
+      const err = validateField(field, form[field.name])
+      if (err) { errors[field.name] = err; hasError = true }
+    }
+    setTouched(allTouched)
+    setFieldErrors(errors)
+    if (hasError) return
+
     setLoading(true)
     setError(null)
     setResult(null)
@@ -78,6 +115,8 @@ export default function Dashboard() {
       if (!res.ok) throw new Error(data.error || 'Something went wrong')
       setResult(data)
       setForm(EMPTY)
+      setTouched({})
+      setFieldErrors({})
     } catch (err) {
       setError(err.message)
     } finally {
@@ -140,22 +179,30 @@ export default function Dashboard() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
-          {FIELDS.map((field, i) =>
-            field.section ? (
+          {FIELDS.map((field, i) => {
+            if (field.section) return (
               <h2 key={field.section} className="text-lg font-semibold text-gray-800 pt-4 pb-1 border-b border-gray-200">
                 {field.section}
               </h2>
-            ) : (
+            )
+            const err = touched[field.name] ? fieldErrors[field.name] : null
+            const borderClass = err
+              ? 'border-red-400 focus:ring-red-400'
+              : 'border-gray-300 focus:ring-indigo-400'
+            return (
               <div key={field.name}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {field.label}{field.required && <span className="text-red-500 ml-0.5">*</span>}
+                </label>
                 {field.textarea ? (
                   <textarea
                     name={field.name}
                     value={form[field.name]}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder={field.placeholder}
                     rows={3}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+                    className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none ${borderClass}`}
                   />
                 ) : (
                   <input
@@ -163,14 +210,16 @@ export default function Dashboard() {
                     name={field.name}
                     value={form[field.name]}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder={field.placeholder}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${borderClass}`}
                   />
                 )}
-                {field.hint && <p className="text-xs text-gray-400 mt-1">{field.hint}</p>}
+                {err && <p className="text-red-500 text-xs mt-1">{err}</p>}
+                {!err && field.hint && <p className="text-xs text-gray-400 mt-1">{field.hint}</p>}
               </div>
             )
-          )}
+          })}
 
           {error && (
             <p className="text-red-500 text-sm">{error}</p>
