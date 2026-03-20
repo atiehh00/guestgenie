@@ -69,6 +69,7 @@ router.post('/', async (req, res) => {
     .single();
 
   if (error) {
+    console.log('FULL SUPABASE ERROR:', JSON.stringify(error, null, 2));
     const msg = error.message || '';
     let userMessage = 'Speichern fehlgeschlagen. Bitte erneut versuchen.';
     if (msg.includes('pattern')) {
@@ -76,7 +77,7 @@ router.post('/', async (req, res) => {
     } else if (msg.includes('null value') || msg.includes('not-null')) {
       userMessage = 'Bitte alle Pflichtfelder ausfüllen.';
     }
-    return res.status(400).json({ error: userMessage });
+    return res.status(400).json({ error: userMessage, debug: error });
   }
   res.status(201).json(data);
 });
